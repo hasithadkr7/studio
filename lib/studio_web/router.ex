@@ -22,6 +22,9 @@ defmodule StudioWeb.Router do
     live "/light", LightLive
     live "/light_bar", LightBarLive
     live "/sandbox", SandboxLive
+    live "/sales", SalesLive
+    live "/bingo", BingoLive
+    live "/flights", FlightsLive
   end
 
   # Other scopes may use custom stacks.

@@ -80,7 +80,6 @@ defmodule StudioWeb.SandboxLive do
     price = Sandbox.calculate_price(socket.assigns.weight)
 
     socket =
-      socket =
       assign(socket,
         price: price
       )
