@@ -31,7 +31,14 @@ defmodule StudioWeb.LightBarLive do
         <% end %>
       </form>
       <form phx-change="move">
-        <input type="range" min="0" max="100" name="brightness" value={@brightness} />
+        <input
+          type="range"
+          min="0"
+          max="100"
+          name="brightness"
+          value={@brightness}
+          phx-debounce="250"
+        />
       </form>
     </div>
     """

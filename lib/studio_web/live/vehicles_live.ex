@@ -8,7 +8,8 @@ defmodule StudioWeb.VehiclesLive do
       assign(socket,
         make_model: "",
         loading: false,
-        vehicles: []
+        vehicles: [],
+        matches: %{}
       )
 
     {:ok, socket}
@@ -18,7 +19,7 @@ defmodule StudioWeb.VehiclesLive do
     ~H"""
     <h1>🚙 Find a Vehicle 🚘</h1>
     <div id="vehicles">
-      <form phx-submit="search">
+      <form phx-submit="search" phx-change="suggest">
         <input
           type="text"
           name="query"
@@ -26,12 +27,20 @@ defmodule StudioWeb.VehiclesLive do
           placeholder="Make or model"
           autofocus
           autocomplete="off"
+          list="matches"
+          phx-debounce="1000"
         />
 
         <button>
           <img src="/images/search.svg" />
         </button>
       </form>
+
+      <datalist id="matches">
+        <option :for={name <- @matches}>
+          <%= name %>
+        </option>
+      </datalist>
 
       <div :if={@loading} class="loader">Loading...</div>
 
@@ -52,6 +61,17 @@ defmodule StudioWeb.VehiclesLive do
       </div>
     </div>
     """
+  end
+
+  def handle_event("suggest", %{"query" => prefix}, socket) do
+    IO.inspect(self(), label: "SUGGEST")
+
+    socket =
+      assign(socket,
+        matches: Vehicles.suggest(prefix)
+      )
+
+    {:noreply, socket}
   end
 
   def handle_event("search", %{"query" => make_or_model}, socket) do
