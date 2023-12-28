@@ -25,6 +25,7 @@ defmodule StudioWeb.Router do
     live "/sales", SalesLive
     live "/bingo", BingoLive
     live "/flights", FlightsLive
+    live "/vehicles", VehiclesLive
   end
 
   # Other scopes may use custom stacks.
