@@ -3,6 +3,7 @@ defmodule StudioWeb.FlightsLive do
 
   alias Studio.Flights
   alias Studio.Airports
+  alias StudioWeb.CustomComponents
 
   def mount(_params, _session, socket) do
     socket =
@@ -44,7 +45,7 @@ defmodule StudioWeb.FlightsLive do
         </option>
       </datalist>
 
-      <div :if={@loading} class="loader">Loading...</div>
+      <CustomComponents.loading loading={@loading} />
 
       <div class="flights">
         <ul>

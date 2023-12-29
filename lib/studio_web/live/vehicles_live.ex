@@ -2,6 +2,7 @@ defmodule StudioWeb.VehiclesLive do
   use StudioWeb, :live_view
 
   alias Studio.Vehicles
+  alias StudioWeb.CustomComponents
 
   def mount(_params, _session, socket) do
     socket =
@@ -42,7 +43,7 @@ defmodule StudioWeb.VehiclesLive do
         </option>
       </datalist>
 
-      <div :if={@loading} class="loader">Loading...</div>
+      <CustomComponents.loading_indicator loading={@loading} />
 
       <div class="vehicles">
         <ul>
