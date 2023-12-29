@@ -52,7 +52,8 @@ defmodule Studio.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.6"},
       {:number, "~> 1.0"},
-      {:timex, "~> 3.7"}
+      {:timex, "~> 3.7"},
+      {:heroicons, "~> 0.5.3"}
     ]
   end
 
