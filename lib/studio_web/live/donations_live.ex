@@ -8,8 +8,8 @@ defmodule StudioWeb.DonationsLive do
   end
 
   def handle_params(params, _uri, socket) do
-    sort_by = (params["sort_by"] || "id") |> String.to_atom()
-    sort_order = (params["sort_order"] || "asc") |> String.to_atom()
+    sort_by = valid_sort_by(params)
+    sort_order = valid_sort_order(params)
 
     options = %{
       sort_by: sort_by,
@@ -27,6 +27,20 @@ defmodule StudioWeb.DonationsLive do
     {:noreply, socket}
   end
 
+  defp valid_sort_by(%{"sort_by" => sort_by})
+       when sort_by in ~w(item quantity days_until_expires) do
+    to_atom(sort_by)
+  end
+
+  defp valid_sort_by(_params), do: :id
+
+  defp valid_sort_order(%{"sort_order" => sort_order})
+       when sort_order in ~w(asc desc) do
+    to_atom(sort_order)
+  end
+
+  defp valid_sort_order(_params), do: :asc
+
   attr :sort_by, :atom, required: true
   attr :options, :map, required: true
   slot :inner_block, required: true
@@ -37,6 +51,7 @@ defmodule StudioWeb.DonationsLive do
       ~p"/donations?#{%{sort_by: @sort_by, sort_order: next_sort_order(@options.sort_order)}}"
     }>
       <%= render_slot(@inner_block) %>
+      <%= sort_indicator(@sort_by, @options) %>
     </.link>
     """
   end
@@ -47,5 +62,24 @@ defmodule StudioWeb.DonationsLive do
 
   defp next_sort_order(:desc) do
     :asc
+  end
+
+  defp sort_indicator(column, %{sort_by: sort_by, sort_order: sort_order})
+       when column == sort_by do
+    case sort_order do
+      :asc -> "👆"
+      :desc -> "👇"
+    end
+  end
+
+  defp sort_indicator(_, _), do: ""
+
+  defp to_atom(str) when is_binary(str) do
+    try do
+      String.to_existing_atom(str)
+    rescue
+      _ ->
+        String.to_atom(str)
+    end
   end
 end
