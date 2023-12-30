@@ -30,6 +30,7 @@ defmodule StudioWeb.Router do
     live "/athletes", AthletesLive
     live "/servers", ServersLive
     live "/servers/:id", ServersLive
+    live "/donations", DonationsLive
   end
 
   # Other scopes may use custom stacks.

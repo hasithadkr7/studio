@@ -13,37 +13,6 @@ defmodule StudioWeb.LightBarLive do
     {:ok, socket}
   end
 
-  def render(assigns) do
-    IO.inspect(self(), label: "RENDER")
-
-    ~H"""
-    <h1>Front Porch Light</h1>
-    <div id="light">
-      <div class="meter">
-        <span style={"width: #{@brightness}%; background: #{temp_color(@temp)}"}>
-          <%= @brightness %>%
-        </span>
-      </div>
-      <form phx-change="change-temp">
-        <%= for temp <- ["3000", "4000", "5000"] do %>
-          <input type="radio" id={temp} name="temp" value={temp} checked={temp == @temp} />
-          <label for={temp}><%= temp %></label>
-        <% end %>
-      </form>
-      <form phx-change="move">
-        <input
-          type="range"
-          min="0"
-          max="100"
-          name="brightness"
-          value={@brightness}
-          phx-debounce="250"
-        />
-      </form>
-    </div>
-    """
-  end
-
   def handle_event("move", %{"brightness" => brightness}, socket) do
     IO.inspect(self(), label: "MOVE")
 
