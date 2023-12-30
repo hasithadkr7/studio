@@ -39,6 +39,11 @@ defmodule StudioWeb.LightLive do
         <img src="/images/light-on.svg" />
       </button>
     </div>
+    <div class="links">
+      <.link navigate={~p"/"}>
+        Home
+      </.link>
+    </div>
     """
   end
 
