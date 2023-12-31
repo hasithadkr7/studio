@@ -11,9 +11,19 @@ defmodule StudioWeb.DonationsLive do
     sort_by = valid_sort_by(params)
     sort_order = valid_sort_order(params)
 
+    IO.inspect(params)
+
+    page = param_to_integer(params["page"], 1)
+    per_page = param_to_integer(params["per_page"], 5)
+
+    donation_count = Donations.count_donations()
+
     options = %{
       sort_by: sort_by,
-      sort_order: sort_order
+      sort_order: sort_order,
+      page: page,
+      per_page: per_page,
+      donation_count: donation_count
     }
 
     donations = Donations.list_donations(options)
@@ -46,10 +56,16 @@ defmodule StudioWeb.DonationsLive do
   slot :inner_block, required: true
 
   def sort_link(assigns) do
+    params = %{
+      assigns.options
+      | sort_by: assigns.sort_by,
+        sort_order: next_sort_order(assigns.options.sort_order)
+    }
+
+    assigns = assign(assigns, params: params)
+
     ~H"""
-    <.link patch={
-      ~p"/donations?#{%{sort_by: @sort_by, sort_order: next_sort_order(@options.sort_order)}}"
-    }>
+    <.link patch={~p"/donations?#{params}"}>
       <%= render_slot(@inner_block) %>
       <%= sort_indicator(@sort_by, @options) %>
     </.link>
@@ -80,6 +96,42 @@ defmodule StudioWeb.DonationsLive do
     rescue
       _ ->
         String.to_atom(str)
+    end
+  end
+
+  def handle_event("select-per-page", %{"per-page" => per_page}, socket) do
+    params = %{socket.assigns.options | per_page: per_page}
+    socket = push_patch(socket, to: ~p"/donations?#{params}")
+    {:noreply, socket}
+  end
+
+  defp param_to_integer(nil, default) do
+    default
+  end
+
+  defp param_to_integer(param, default) do
+    case Integer.parse(param, 10) do
+      {number, _} ->
+        number
+
+      :error ->
+        default
+    end
+  end
+
+  defp more_pages?(options, donation_count) do
+    options.page * options.per_page < donation_count
+  end
+
+  defp pages(options, donation_count) do
+    page_count = ceil(donation_count / options.per_page)
+
+    for page_number <- (options.page - 2)..(options.page + 2),
+        page_number > 0 do
+      if page_number <= page_count do
+        current_page? = page_number == options.page
+        {page_number, current_page?}
+      end
     end
   end
 end
