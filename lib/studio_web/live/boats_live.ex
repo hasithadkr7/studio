@@ -92,18 +92,31 @@ defmodule StudioWeb.BoatsLive do
     """
   end
 
-  def handle_event("filter", %{"type" => type, "prices" => prices}, socket) do
-    filter = %{type: type, prices: prices}
+  def handle_params(params, _uri, socket) do
+    type = params["type"] || ""
+    prices = params["prices"] || [""]
+
+    IO.inspect(params)
+
+    filter = %{
+      type: type,
+      prices: prices
+    }
+
     boats = Boats.list_boats(filter)
-    IO.inspect(length(socket.assigns.boats), label: "Assigned boats")
-    IO.inspect(length(boats), label: "Filtered boats")
 
     socket =
       assign(socket,
-        filter: filter,
-        boats: boats
+        boats: boats,
+        filter: filter
       )
 
+    {:noreply, socket}
+  end
+
+  def handle_event("filter", %{"type" => type, "prices" => prices}, socket) do
+    filter = %{type: type, prices: prices}
+    socket = push_patch(socket, to: ~p"/boats?#{filter}")
     {:noreply, socket}
   end
 

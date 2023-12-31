@@ -12,9 +12,16 @@ defmodule StudioWeb.PizzaOrdersLive do
     sort_by = valid_sort_by(params)
     sort_order = valid_sort_order(params)
 
+    IO.inspect(params)
+
+    page = param_to_integer(params["page"], 1)
+    per_page = param_to_integer(params["per_page"], 5)
+
     options = %{
       sort_by: sort_by,
-      sort_order: sort_order
+      sort_order: sort_order,
+      page: page,
+      per_page: per_page
     }
 
     donations = PizzaOrders.list_pizza_orders(options)
@@ -28,15 +35,27 @@ defmodule StudioWeb.PizzaOrdersLive do
     {:noreply, socket}
   end
 
+  def handle_event("select-per-page", %{"per-page" => per_page}, socket) do
+    params = %{socket.assigns.options | per_page: per_page}
+    socket = push_patch(socket, to: ~p"/pizza-orders?#{params}")
+    {:noreply, socket}
+  end
+
   attr :sort_by, :atom, required: true
   attr :options, :map, required: true
   slot :inner_block, required: true
 
   def sort_link(assigns) do
+    params = %{
+      assigns.options
+      | sort_by: assigns.sort_by,
+        sort_order: next_sort_order(assigns.options.sort_order)
+    }
+
+    assigns = assign(assigns, params: params)
+
     ~H"""
-    <.link patch={
-      ~p"/pizza-orders?#{%{sort_by: @sort_by, sort_order: next_sort_order(@options.sort_order)}}"
-    }>
+    <.link patch={~p"/pizza-orders?#{params}"}>
       <%= render_slot(@inner_block) %>
       <%= sort_indicator(@sort_by, @options) %>
     </.link>
@@ -83,6 +102,20 @@ defmodule StudioWeb.PizzaOrdersLive do
     rescue
       _ ->
         String.to_atom(str)
+    end
+  end
+
+  defp param_to_integer(nil, default) do
+    default
+  end
+
+  defp param_to_integer(param, default) do
+    case Integer.parse(param, 10) do
+      {number, _} ->
+        number
+
+      :error ->
+        default
     end
   end
 end
