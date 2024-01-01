@@ -2,15 +2,19 @@ defmodule StudioWeb.ServersLive do
   use StudioWeb, :live_view
 
   alias Studio.Servers
+  alias Studio.Servers.Server
 
   def mount(_params, _session, socket) do
     servers = Servers.list_servers()
+
+    changeset = Servers.change_server(%Server{})
 
     socket =
       assign(socket,
         servers: servers,
         selected_server: hd(servers),
-        coffees: 0
+        coffees: 0,
+        form: to_form(changeset)
       )
 
     {:ok, socket}
@@ -29,7 +33,11 @@ defmodule StudioWeb.ServersLive do
 
   def handle_params(_params, _uri, socket) do
     IO.inspect(self(), label: "HANDLE PARAMS CATCH-ALL")
-    {:noreply, assign(socket, selected_server: hd(socket.assigns.servers))}
+
+    {:noreply,
+     assign(socket,
+       selected_server: nil
+     )}
   end
 
   def render(assigns) do
@@ -56,10 +64,32 @@ defmodule StudioWeb.ServersLive do
           </button>
         </div>
       </div>
+
       <div class="main">
         <div class="wrapper">
+          <.form for={@form} phx-submit="save">
+            <div class="field">
+              <.input field={@form[:name]} placeholder="Name" autocomplete="off" />
+            </div>
+            <div class="field">
+              <.input field={@form[:framework]} placeholder="Framework" autocomplete="off" />
+            </div>
+            <div class="field">
+              <.input field={@form[:size]} placeholder="Size (MB)" type="number" />
+            </div>
+            <div class="field">
+              <.input
+                field={@form[:last_commit_message]}
+                placeholder="Last commit message"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <.button phx-disable-with="Saving...">Create</.button>
+            </div>
+          </.form>
           <div class="server">
-            <.server server={@selected_server} />
+            <.server :if={@selected_server} server={@selected_server} />
           </div>
           <div class="links">
             <.link navigate={~p"/light"}>
@@ -105,5 +135,29 @@ defmodule StudioWeb.ServersLive do
   def handle_event("drink", _, socket) do
     IO.inspect(self(), label: "DRINK")
     {:noreply, update(socket, :coffees, &(&1 + 1))}
+  end
+
+  def handle_event("save", %{"server" => server_params}, socket) do
+    case Servers.create_server(server_params) do
+      {:error, changeset} ->
+        {:noreply, assign(socket, :form, to_form(changeset))}
+
+      {:ok, server} ->
+        socket =
+          update(
+            socket,
+            :servers,
+            fn servers -> [server | servers] end
+          )
+
+        changeset = Servers.change_server(%Server{})
+
+        socket =
+          assign(socket,
+            form: to_form(changeset)
+          )
+
+        {:noreply, socket}
+    end
   end
 end

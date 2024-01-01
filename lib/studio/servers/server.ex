@@ -17,6 +17,9 @@ defmodule Studio.Servers.Server do
   def changeset(server, attrs) do
     server
     |> cast(attrs, [:name, :status, :deploy_count, :size, :framework, :last_commit_message])
-    |> validate_required([:name, :status, :deploy_count, :size, :framework, :last_commit_message])
+    |> validate_required([:name, :size, :framework, :last_commit_message])
+    |> validate_number(:deploy_count, greater_than: 0, less_than: 10)
+    |> validate_inclusion(:status, ["up", "down"])
+    |> validate_number(:size, greater_than: 0)
   end
 end
